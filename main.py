@@ -8,7 +8,7 @@ import notify
 import check
 
 #引入任务模块
-import TaskList.tasks as tasks
+import scheduler
 
 #用户登录全局变量
 client = None
@@ -33,7 +33,7 @@ def main(event, context):
     ip,country=check.getnetinfo()
     logging.info('【自检】: ' + str(ip) +'（'+ str(country) +'）')
     logging.info('【自检】: 当前运行系统' + check.system())
-    if str(country)!='中国':
+    if str(country)!='China':
         logging.info('【自检】:您的地址异常，但本版本未做限制，通过！ ')
     users = readJson()
     for user in users:
@@ -42,9 +42,18 @@ def main(event, context):
         global client
         client = login.login(user['username'],user['password'],user['appId'])
         username = user['username']
-        lotteryNum = user['lotteryNum']
+        if ('lotteryNum' in user):
+            lotteryNum = user['lotteryNum']
+        else:
+            lotteryNum = 0
+        #任务调度代码
         if client != False:
-            tasks.run(client,username,lotteryNum)
+            scheduler.runscheduler(client,username,lotteryNum)
+            
+            
+            
+            
+            
         if ('email' in user) :
             notify.sendEmail(user['email'])
         if ('dingtalkWebhook' in user) :
